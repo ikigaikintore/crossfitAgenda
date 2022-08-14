@@ -12,3 +12,5 @@ Connect crossfit using a picture of their schedule and set it in your Google Cal
 - Create a CLI to set up the days to book the days
 - [Optional] try to book the dates in the app
 - Register the days with the time and the exercise in your Google Calendar (or any Calendar service)
+- Cache the image and use it
+- Cache the ocr result

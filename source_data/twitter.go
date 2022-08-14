@@ -2,12 +2,13 @@ package source_data
 
 import (
 	"fmt"
-	twitterscraper "github.com/n0madic/twitter-scraper"
 	"io"
 	"log"
 	"net/http"
 	"os"
 	"time"
+
+	twitterscraper "github.com/n0madic/twitter-scraper"
 )
 
 type (

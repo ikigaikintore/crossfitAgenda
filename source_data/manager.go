@@ -4,11 +4,11 @@ import "log"
 
 type (
 	ResourceManager interface {
-		DownloadPicture() error
+		DownloadPicture() (string, error)
 	}
 
 	SourceData interface {
-		DownloadPicture() error
+		DownloadPicture() (string, error)
 	}
 
 	source struct {
@@ -26,16 +26,16 @@ func defaultClient() SourceData {
 	return &dumbClientSourceData{log: log.Default()}
 }
 
-func (d dumbClientSourceData) DownloadPicture() error {
+func (d dumbClientSourceData) DownloadPicture() (string, error) {
 	d.log.Println("nothing to do here")
-	return nil
+	return "", nil
 }
 
 func defaultSourceOption() *source {
 	return &source{sourceClient: defaultClient()}
 }
 
-func (s source) DownloadPicture() error {
+func (s source) DownloadPicture() (string, error) {
 	return s.sourceClient.DownloadPicture()
 }
 

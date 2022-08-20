@@ -23,6 +23,10 @@ const (
 
 type ExerciseName string
 
+func (e ExerciseName) String() string {
+	return string(e)
+}
+
 const (
 	CleanAndJerk    ExerciseName = "C&J"
 	OverHeadSquat   ExerciseName = "OHS"
@@ -204,6 +208,14 @@ type wod struct {
 	month   time.Month
 	year    int
 	rawDate time.Time
+}
+
+func (w *wod) ExerciseName() ExerciseName {
+	return w.name
+}
+
+func (w *wod) Day() int {
+	return w.day
 }
 
 type MonthWodExercises map[int]*wod

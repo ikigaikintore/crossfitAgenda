@@ -16,3 +16,4 @@ Connect crossfit using a picture of their schedule and set it in your Google Cal
 - Cache the image and use it
 - Cache the ocr result
 - Retry retrieve credentials if token has expired
+- Use events

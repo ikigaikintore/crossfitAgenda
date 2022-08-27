@@ -38,13 +38,6 @@ func (tw twitter) DownloadPicture() (string, error) {
 
 	client := http.Client{Timeout: 20 * time.Second}
 
-	dateTweet := tweets[0].TimeParsed
-	now := time.Now()
-
-	if dateTweet.Month() != now.Month() {
-		return "", fmt.Errorf("month of the tweet is not actual, wait a little")
-	}
-
 	resp, err := client.Get(tweets[0].Photos[0])
 	if err != nil {
 		return "", fmt.Errorf("downloading photo: %w", err)

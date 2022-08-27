@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"github.com/ervitis/crossfitAgenda/credentials"
 	"github.com/ervitis/crossfitAgenda/crossfit_events"
 	"github.com/ervitis/crossfitAgenda/ocr"
@@ -36,8 +35,6 @@ func main() {
 	if err != nil {
 		log.Printf("error getting events: %s\n", err)
 	}
-
-	fmt.Println(events)
 
 	if err := calService.UpdateEvents(events, monthWod); err != nil {
 		log.Fatal(err)

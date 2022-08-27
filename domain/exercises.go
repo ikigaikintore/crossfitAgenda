@@ -145,6 +145,9 @@ func (r raw) Convert() MonthWodExercises {
 	sentences := strings.Split(string(r.data), "\n")
 	listNodeExercises := newListNodes()
 	for i := 0; i < len(sentences)-1; i++ {
+		if strings.Contains(sentences[i+1], "RM") {
+			sentences = append(sentences[:i+1], sentences[i+2:]...)
+		}
 		if r.wodValidName(sentences[i+1], exercisesExistsMap) && r.wodValidDay(sentences[i]) {
 			listNodeExercises.Insert(strings.TrimSpace(sentences[i+1]), strings.TrimSpace(sentences[i]))
 		}

@@ -17,10 +17,10 @@ type (
 	}
 
 	book struct {
-		EventID string
-		Day     int
-		Hour    int
-		Minute  int
+		EventID   string
+		Day       int
+		StartDate time.Time
+		EndDate   time.Time
 	}
 
 	Calendar struct {
@@ -52,10 +52,18 @@ func (w *agendaService) UpdateEvents(cal *Calendar, wods domain.MonthWodExercise
 				continue
 			}
 
-			w.calendar.Events.Update(cal.ID, v.EventID, &calendar.Event{
+			if wod.ExerciseName().String() == "" {
+				continue
+			}
+
+			if _, err := w.calendar.Events.Update(cal.ID, v.EventID, &calendar.Event{
 				Description: wod.ExerciseName().String(),
 				Summary:     fmt.Sprintf("Crossfit class: %s", wod.ExerciseName().String()),
-			})
+				End:         &calendar.EventDateTime{DateTime: v.EndDate.Format(time.RFC3339)},
+				Start:       &calendar.EventDateTime{DateTime: v.StartDate.Format(time.RFC3339)},
+			}).Do(); err != nil {
+				return err
+			}
 		}
 	}
 	return nil
@@ -84,7 +92,7 @@ func (w *agendaService) GetCrossfitEvents() (*Calendar, error) {
 		SingleEvents(true).
 		Q("Class").
 		TimeMin(firstOfMonth.Format(time.RFC3339)).
-		TimeMax(lastOfMonth.Format(time.RFC3339)).
+		TimeMax(lastOfMonth.AddDate(0, 0, 1).Format(time.RFC3339)).
 		Do()
 	if err != nil {
 		log.Fatalf("Unable to retrieve next ten of the user's events: %v", err)
@@ -97,12 +105,15 @@ func (w *agendaService) GetCrossfitEvents() (*Calendar, error) {
 
 	myCalendar := &Calendar{Month: firstOfMonth.Month(), DaysBooked: make(map[int]*book), ID: primaryCalendar.Id}
 	for _, item := range events.Items {
-		startDateEvent, _ := time.Parse(time.RFC3339, item.Start.Date)
+		startDateEvent, _ := time.Parse(time.RFC3339, item.Start.DateTime)
+		endDateEvent, _ := time.Parse(time.RFC3339, item.End.DateTime)
 		dayEvent := startDateEvent.Day()
-		myCalendar.DaysBooked[dayEvent].EventID = item.Id
-		myCalendar.DaysBooked[dayEvent].Day = dayEvent
-		myCalendar.DaysBooked[dayEvent].Hour = startDateEvent.Hour()
-		myCalendar.DaysBooked[dayEvent].Minute = startDateEvent.Minute()
+		myCalendar.DaysBooked[dayEvent] = &book{
+			EventID:   item.Id,
+			Day:       dayEvent,
+			StartDate: startDateEvent,
+			EndDate:   endDateEvent,
+		}
 	}
 	return myCalendar, nil
 }

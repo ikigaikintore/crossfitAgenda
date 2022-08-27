@@ -27,7 +27,7 @@ func main() {
 		log.Printf("error in ocr client: %s\n", err)
 	}
 
-	fmt.Println(processor.Convert())
+	monthWod := processor.Convert()
 
 	credManager := credentials.New()
 	_ = credManager.SetConfigWithScopes(calendar.CalendarScope, calendar.CalendarEventsScope)
@@ -38,4 +38,8 @@ func main() {
 	}
 
 	fmt.Println(events)
+
+	if err := calService.UpdateEvents(events, monthWod); err != nil {
+		log.Fatal(err)
+	}
 }

@@ -1,7 +1,6 @@
 package domain
 
 import (
-	"fmt"
 	"log"
 	"regexp"
 	"strconv"
@@ -90,7 +89,6 @@ type RawProcessor interface {
 }
 
 func NewRawProcessor(text string) RawProcessor {
-	fmt.Println(text)
 	rgx := make([]*regexp.Regexp, len(patterns))
 	for i, pattern := range patterns {
 		rgx[i] = regexp.MustCompile(pattern)

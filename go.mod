@@ -1,6 +1,6 @@
 module github.com/ervitis/crossfitAgenda
 
-go 1.17
+go 1.19
 
 require (
 	cloud.google.com/go/vision v1.2.0

@@ -20,6 +20,65 @@ const (
 	PecsExercise      ExerciseType = "pecs"
 )
 
+type MonthWod string
+type MonthsWod []MonthWod
+
+const (
+	January   MonthWod = "January"
+	February  MonthWod = "February"
+	March     MonthWod = "March"
+	April     MonthWod = "April"
+	May       MonthWod = "May"
+	June      MonthWod = "June"
+	July      MonthWod = "July"
+	August    MonthWod = "August"
+	September MonthWod = "September"
+	October   MonthWod = "October"
+	November  MonthWod = "November"
+	December  MonthWod = "December"
+)
+
+var months = MonthsWod{January, February, March, April, May, June, July, August, September, October, November, December}
+
+func (mns MonthsWod) toMap() map[MonthWod]struct{} {
+	m := make(map[MonthWod]struct{})
+	for _, month := range months {
+		m[month] = struct{}{}
+	}
+	return m
+}
+
+func (mn MonthWod) toMonth() time.Month {
+	switch mn {
+	case January:
+		return time.January
+	case February:
+		return time.February
+	case March:
+		return time.March
+	case April:
+		return time.April
+	case May:
+		return time.May
+	case June:
+		return time.June
+	case July:
+		return time.July
+	case August:
+		return time.August
+	case September:
+		return time.September
+	case October:
+		return time.October
+	case November:
+		return time.November
+	case December:
+		return time.December
+	default:
+		return -1
+	}
+}
+
 type ExerciseName string
 
 func (e ExerciseName) String() string {
@@ -101,20 +160,21 @@ func NewRawProcessor(text string) RawProcessor {
 	}
 }
 
-func (r raw) prepareMonthWod() MonthWodExercises {
+func (r raw) prepareMonthWod(monthTweet MonthWod) MonthWodExercises {
 	month := make(MonthWodExercises)
 	var firstDayMonth time.Time
-	var actualMonth time.Month
+	var firstDayNextMonth time.Time
 
 	{
 		loc, _ := time.LoadLocation("Asia/Tokyo")
 		now := time.Now()
-		firstDayMonth = time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, loc)
-		actualMonth = firstDayMonth.Month()
+		diff := monthTweet.toMonth() - now.Month()
+		firstDayMonth = time.Date(now.Year(), now.Month()+diff, 1, 0, 0, 0, 0, loc)
+		firstDayNextMonth = time.Date(firstDayMonth.Year(), firstDayMonth.Month()+1, 1, 0, 0, 0, 0, loc)
 	}
 
 	for {
-		if firstDayMonth.Month() != actualMonth {
+		if firstDayMonth.Month() == firstDayNextMonth.Month() {
 			break
 		}
 		month[firstDayMonth.Day()] = &wod{
@@ -132,7 +192,16 @@ func (r raw) Convert() MonthWodExercises {
 	/*
 		send workers from last line to beginning until it finds the weekend days
 	*/
-	weeks := r.prepareMonthWod()
+	sentences := strings.Split(string(r.data), "\n")
+	mapMonths := months.toMap()
+	var monthTweet MonthWod
+	for _, sentence := range sentences {
+		if _, exists := mapMonths[MonthWod(sentence)]; exists {
+			monthTweet = MonthWod(sentence)
+			break
+		}
+	}
+	weeks := r.prepareMonthWod(monthTweet)
 
 	exercisesExistsMap := make(map[ExerciseName]struct{})
 	for _, v := range listExercises {
@@ -142,7 +211,6 @@ func (r raw) Convert() MonthWodExercises {
 		exercisesExistsMap[v] = struct{}{}
 	}
 
-	sentences := strings.Split(string(r.data), "\n")
 	listNodeExercises := newListNodes()
 	for i := 0; i < len(sentences)-1; i++ {
 		if strings.Contains(sentences[i+1], "RM") {
@@ -206,6 +274,10 @@ func (w *wod) ExerciseName() ExerciseName {
 
 func (w *wod) Day() int {
 	return w.day
+}
+
+func (w *wod) Month() time.Month {
+	return w.month
 }
 
 type MonthWodExercises map[int]*wod

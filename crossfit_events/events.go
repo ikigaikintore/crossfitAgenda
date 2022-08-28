@@ -46,24 +46,27 @@ func New(ctx context.Context, credManager *credentials.Manager) (IAgendaService,
 }
 
 func (w *agendaService) UpdateEvents(cal *Calendar, wods domain.MonthWodExercises) error {
-	for _, v := range cal.DaysBooked {
-		for _, wod := range wods {
-			if v.Day != wod.Day() {
-				continue
-			}
+	for day, wod := range wods {
+		book, exists := cal.DaysBooked[day]
+		if !exists {
+			continue
+		}
 
-			if wod.ExerciseName().String() == "" {
-				continue
-			}
+		if book.StartDate.Month() != wod.Month() {
+			continue
+		}
 
-			if _, err := w.calendar.Events.Update(cal.ID, v.EventID, &calendar.Event{
-				Description: wod.ExerciseName().String(),
-				Summary:     fmt.Sprintf("Crossfit class: %s", wod.ExerciseName().String()),
-				End:         &calendar.EventDateTime{DateTime: v.EndDate.Format(time.RFC3339)},
-				Start:       &calendar.EventDateTime{DateTime: v.StartDate.Format(time.RFC3339)},
-			}).Do(); err != nil {
-				return err
-			}
+		if wod.ExerciseName().String() == "" {
+			continue
+		}
+
+		if _, err := w.calendar.Events.Update(cal.ID, book.EventID, &calendar.Event{
+			Description: wod.ExerciseName().String(),
+			Summary:     fmt.Sprintf("Crossfit class: %s", wod.ExerciseName().String()),
+			End:         &calendar.EventDateTime{DateTime: book.EndDate.Format(time.RFC3339)},
+			Start:       &calendar.EventDateTime{DateTime: book.StartDate.Format(time.RFC3339)},
+		}).Do(); err != nil {
+			return err
 		}
 	}
 	return nil
@@ -78,7 +81,7 @@ func (w *agendaService) GetCrossfitEvents() (*Calendar, error) {
 	now := time.Now().In(w.getLocation())
 
 	firstOfMonth := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, w.getLocation())
-	lastOfMonth := firstOfMonth.AddDate(0, 1, -1)
+	lastOfMonth := firstOfMonth.AddDate(0, 2, -1)
 
 	primaryCalendar, err := w.calendar.Calendars.Get("primary").Do()
 	if err != nil {

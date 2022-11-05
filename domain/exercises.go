@@ -35,10 +35,11 @@ const (
 	September MonthWod = "September"
 	October   MonthWod = "October"
 	November  MonthWod = "November"
+	Nobember  MonthWod = "Nobember"
 	December  MonthWod = "December"
 )
 
-var months = MonthsWod{January, February, March, April, May, June, July, August, September, October, November, December}
+var months = MonthsWod{January, February, March, April, May, June, July, August, September, October, November, Nobember, December}
 
 func (mns MonthsWod) toMap() map[MonthWod]struct{} {
 	m := make(map[MonthWod]struct{})
@@ -70,7 +71,7 @@ func (mn MonthWod) toMonth() time.Month {
 		return time.September
 	case October:
 		return time.October
-	case November:
+	case November, Nobember:
 		return time.November
 	case December:
 		return time.December
@@ -108,6 +109,7 @@ const (
 	PushPress       ExerciseName = "Push Press"
 	Jerk            ExerciseName = "Jerk"
 	Gymnastics      ExerciseName = "Gymnastics"
+	UpperBody       ExerciseName = "Upper Body"
 )
 
 var listExercises = []ExerciseName{
@@ -133,6 +135,7 @@ var listExercises = []ExerciseName{
 	StrictPullUp,
 	Jerk,
 	Gymnastics,
+	UpperBody,
 }
 
 var patterns = []string{`^([1-9]|[12]\d|3[01])$`}
@@ -213,7 +216,7 @@ func (r raw) Convert() MonthWodExercises {
 
 	listNodeExercises := newListNodes()
 	for i := 0; i < len(sentences)-1; i++ {
-		if strings.Contains(sentences[i+1], "RM") {
+		if r.omitIfContains(sentences[i+1]) {
 			sentences = append(sentences[:i+1], sentences[i+2:]...)
 		}
 		if r.wodValidName(sentences[i+1], exercisesExistsMap) && r.wodValidDay(sentences[i]) {
@@ -257,6 +260,18 @@ func (r raw) wodValidName(name string, exercisesExistsMap map[ExerciseName]struc
 		return false
 	}
 	return true
+}
+
+func (r raw) omitIfContains(str string) bool {
+	omitList := map[string]struct{}{
+		"RM":   {},
+		"PAMA": {},
+		"BA":   {},
+	}
+	if _, exists := omitList[str]; exists {
+		return true
+	}
+	return false
 }
 
 type wod struct {

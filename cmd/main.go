@@ -2,12 +2,12 @@ package main
 
 import (
 	"context"
+	"log"
+
+	"github.com/ervitis/crossfitAgenda/calendar"
 	"github.com/ervitis/crossfitAgenda/credentials"
-	"github.com/ervitis/crossfitAgenda/crossfit_events"
 	"github.com/ervitis/crossfitAgenda/ocr"
 	"github.com/ervitis/crossfitAgenda/source_data"
-	"google.golang.org/api/calendar/v3"
-	"log"
 )
 
 func main() {
@@ -29,8 +29,8 @@ func main() {
 	monthWod := processor.Convert()
 
 	credManager := credentials.New()
-	_ = credManager.SetConfigWithScopes(calendar.CalendarScope, calendar.CalendarEventsScope)
-	calService, _ := crossfit_events.New(context.Background(), credManager)
+	_ = credManager.SetConfigWithScopes(calendar.Scope, calendar.EventsScope)
+	calService, _ := calendar.New(context.Background(), credManager)
 	events, err := calService.GetCrossfitEvents()
 	if err != nil {
 		log.Printf("error getting events: %s\n", err)

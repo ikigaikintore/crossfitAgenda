@@ -4,14 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"golang.org/x/oauth2"
-	"golang.org/x/oauth2/google"
 	"io/fs"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 	"path/filepath"
+
+	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/google"
 )
 
 const (
@@ -33,7 +33,7 @@ type (
 )
 
 func New() *Manager {
-	b, err := ioutil.ReadFile(pathCredentialFile)
+	b, err := os.ReadFile(pathCredentialFile)
 	if err != nil {
 		log.Fatalf("Unable to read client secret file: %v", err)
 	}

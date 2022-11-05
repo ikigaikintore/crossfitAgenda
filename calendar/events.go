@@ -1,14 +1,15 @@
-package crossfit_events
+package calendar
 
 import (
 	"context"
 	"fmt"
+	"log"
+	"time"
+
 	"github.com/ervitis/crossfitAgenda/credentials"
 	"github.com/ervitis/crossfitAgenda/domain"
 	"google.golang.org/api/calendar/v3"
 	"google.golang.org/api/option"
-	"log"
-	"time"
 )
 
 type (

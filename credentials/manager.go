@@ -3,12 +3,14 @@ package credentials
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/fs"
 	"log"
 	"net/http"
 	"os"
 	"path/filepath"
+	"time"
 
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
@@ -23,6 +25,10 @@ const (
 var (
 	pathTokenFile      = fmt.Sprintf("%s%s%s", folderNameEnv, string(filepath.Separator), tokenFileName)
 	pathCredentialFile = fmt.Sprintf("%s%s%s", folderNameEnv, string(filepath.Separator), credentialFileName)
+)
+
+var (
+	ErrExpiredToken = errors.New("token expired")
 )
 
 type (
@@ -51,6 +57,14 @@ func createFolderEnv() {
 	}
 }
 
+func (m *Manager) valid(exp time.Time) error {
+	now := time.Now()
+	if exp.Before(now) {
+		return ErrExpiredToken
+	}
+	return nil
+}
+
 func (m *Manager) SetConfigWithScopes(scopes ...string) error {
 	cfg, err := google.ConfigFromJSON(m.cred, scopes...)
 	if err != nil {
@@ -67,6 +81,11 @@ func (m *Manager) GetClient() *http.Client {
 
 	tok, err := tokenFromFile(pathTokenFile)
 	if err != nil {
+		tok = m.getTokenFromWeb(m.oauthCfg)
+		saveToken(pathTokenFile, tok)
+	}
+
+	if err := m.valid(tok.Expiry); err != nil && errors.Is(err, ErrExpiredToken) {
 		tok = m.getTokenFromWeb(m.oauthCfg)
 		saveToken(pathTokenFile, tok)
 	}
@@ -95,6 +114,7 @@ func (m *Manager) getTokenFromWeb(config *oauth2.Config) *oauth2.Token {
 }
 
 func tokenFromFile(file string) (*oauth2.Token, error) {
+	fmt.Println(file)
 	f, err := os.Open(file)
 	if err != nil {
 		return nil, err

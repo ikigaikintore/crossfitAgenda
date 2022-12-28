@@ -87,8 +87,9 @@ func (e ExerciseName) String() string {
 }
 
 const (
+	HandStand       ExerciseName = "Handstand"
 	CleanAndJerk    ExerciseName = "C&J"
-	OverHeadSquat   ExerciseName = "OHS"
+	OHS             ExerciseName = "OHS"
 	BUS             ExerciseName = "BUS"
 	HandStandPushUp ExerciseName = "HSPU"
 	DeadLift        ExerciseName = "DL"
@@ -110,13 +111,14 @@ const (
 	Jerk            ExerciseName = "Jerk"
 	Gymnastics      ExerciseName = "Gymnastics"
 	UpperBody       ExerciseName = "Upper Body"
+	Thruster        ExerciseName = "Thruster"
 )
 
 var listExercises = []ExerciseName{
+	HandStand,
 	Clean,
 	CleanAndJerk,
 	OTM,
-	OverHeadSquat,
 	BUS,
 	BackSquat,
 	BackStrength,
@@ -136,6 +138,8 @@ var listExercises = []ExerciseName{
 	Jerk,
 	Gymnastics,
 	UpperBody,
+	OHS,
+	Thruster,
 }
 
 var patterns = []string{`^([1-9]|[12]\d|3[01])$`}

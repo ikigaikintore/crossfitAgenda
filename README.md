@@ -18,3 +18,14 @@ Connect crossfit using a picture of their schedule and set it in your Google Cal
 - Cache the ocr result
 - If an event is unbooked, delete it from the calendar
 - ~~Use events~~
+- Create external API HTTP or GRPC
+
+## Run it
+
+Create a folder called `env` and put the credentials file named `crossfitagenda.json`
+
+```bash
+go build -o crossfit cmd/main.go
+
+GOOGLE_APPLICATION_CREDENTIALS=env/crossfitagenda.json ./crossfit
+```

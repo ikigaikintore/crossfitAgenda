@@ -3,7 +3,6 @@ package ocr
 import (
 	vision "cloud.google.com/go/vision/apiv1"
 	"context"
-	"fmt"
 	"github.com/ervitis/crossfitAgenda/domain"
 	"os"
 )
@@ -31,7 +30,6 @@ func (fr fileReader) Read() (domain.RawProcessor, error) {
 		_ = client.Close()
 	}()
 
-	fmt.Println(fr.path)
 	file, err := os.Open(fr.path)
 	if err != nil {
 		return nil, err

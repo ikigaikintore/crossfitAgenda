@@ -114,7 +114,6 @@ func (m *Manager) getTokenFromWeb(config *oauth2.Config) *oauth2.Token {
 }
 
 func tokenFromFile(file string) (*oauth2.Token, error) {
-	fmt.Println(file)
 	f, err := os.Open(file)
 	if err != nil {
 		return nil, err

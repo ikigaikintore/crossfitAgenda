@@ -4,10 +4,11 @@ go 1.19
 
 require (
 	cloud.google.com/go/vision v1.2.0
-	github.com/google/uuid v1.3.0
 	github.com/n0madic/twitter-scraper v0.0.0-20220616082230-d75fe13dd628
 	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8
 	google.golang.org/api v0.70.0
+	google.golang.org/grpc v1.44.0
+	google.golang.org/protobuf v1.27.1
 )
 
 require (
@@ -23,6 +24,4 @@ require (
 	golang.org/x/text v0.3.7 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto v0.0.0-20220222213610-43724f9ea8cf // indirect
-	google.golang.org/grpc v1.44.0 // indirect
-	google.golang.org/protobuf v1.27.1 // indirect
 )

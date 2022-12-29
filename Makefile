@@ -7,16 +7,16 @@ help: ## Show this help
 install: ## Install dependencies
 	go mod tidy
 
-generate-api-v1: generate-http-api-v1 ## Generate http API v1
+generate-api-v1: generate-http-api-v1 generate-proto-v1 install ## Generate http API v1
 
 generate-http-api-v1: ## Generates the endpoint for full v1 API
 	rm -f ./pkg/adapters/api/v1/server.gen.go && \
-	mkdir -p ./out/api/v1 && \
-	bash runtime-container.sh run \
+	mkdir -p ./out/api/ && \
+	docker run \
 	--rm -v ${PWD}:/local \
-	docker.io/ervitis/oapi-codegen:v1.11.0 oapi-codegen --config /local/api_schemas/http/v1/oapiconfig.yaml /local/api_schemas/http/v1/schema.yml > ./out/api/v1/server.gen.go && \
+	docker.io/ervitis/oapi-codegen:v1.12.4 oapi-codegen --config /local/handlers/oapiconfig.yaml /local/handlers/schema.yml > ./out/api/server.gen.go && \
 	sleep 3 && \
-	mv ./out/api/v1/server.gen.go ./pkg/adapters/api/v1 && \
+	mv ./out/api/server.gen.go ./handlers/http/ && \
 	sleep 1 && rm -rf ./out
 
 # The proto file generated:
@@ -47,5 +47,4 @@ generate-grpc-v1: ## Generate the server and client from proto file
 	sleep 1 && \
 	mv ./gen/pb-go/* ./handlers/grpc/ && \
 	sleep 1 && \
-	rm -rf ./gen && \
-	make install
+	rm -rf ./gen

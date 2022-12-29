@@ -14,10 +14,12 @@ paths:
       produces:
         - application/json
       responses:
-        202:
-          $ref: '#/definitions/Agenda'
+        204:
+          description: 'ok'
         500:
-          $ref: '#/definitions/Error'
+          description: Error
+          schema:
+            $ref: '#/definitions/Error'
   /status:
     get:
       summary: Status process
@@ -69,8 +71,7 @@ definitions:
     type: object
     properties:
       id:
-        type: integer
-        format: int64
+        type: string
     required:
       - id
   Error:

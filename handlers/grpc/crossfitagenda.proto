@@ -13,12 +13,6 @@ syntax = "proto3";
 package crossfitagenda;
 option go_package = "./;grpc";
 
-message Agenda {
-
-  int64 id = 3355;
-
-}
-
 message Error {
 
   float status = 355610639;
@@ -61,5 +55,5 @@ service DefaultService {
 }
 
 message StatusResponse {
-  repeated Status data = 1;
+  Status data = 1;
 }

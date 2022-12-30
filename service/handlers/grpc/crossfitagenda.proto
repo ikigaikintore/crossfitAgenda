@@ -23,7 +23,6 @@ message Error {
 
 }
 
-
 message Status {
 
   int64 id = 3355;

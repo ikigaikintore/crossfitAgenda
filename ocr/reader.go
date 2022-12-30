@@ -4,14 +4,11 @@ import (
 	vision "cloud.google.com/go/vision/apiv1"
 	"context"
 	"github.com/ervitis/crossfitAgenda/domain"
+	"github.com/ervitis/crossfitAgenda/ports"
 	"os"
 )
 
 type (
-	SourceReader interface {
-		Read() (domain.RawProcessor, error)
-	}
-
 	fileReader struct {
 		path string
 	}
@@ -52,6 +49,10 @@ func (fr fileReader) Read() (domain.RawProcessor, error) {
 	return domain.NewRawProcessor(text.Text), nil
 }
 
-func NewSourceReader(fileName string) SourceReader {
+func (fr fileReader) SetFile(path string) {
+	fr.path = path
+}
+
+func NewSourceReader(fileName string) ports.SourceReader {
 	return &fileReader{path: fileName}
 }

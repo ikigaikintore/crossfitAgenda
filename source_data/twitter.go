@@ -2,6 +2,7 @@ package source_data
 
 import (
 	"fmt"
+	"github.com/ervitis/crossfitAgenda/ports"
 	"io"
 	"log"
 	"net/http"
@@ -18,7 +19,7 @@ type (
 	}
 )
 
-func NewTwitterClient() SourceData {
+func NewTwitterClient() ports.SourceData {
 	return &twitter{
 		client: twitterscraper.New(),
 		uri:    "Haleo_DKY",

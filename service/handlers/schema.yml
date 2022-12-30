@@ -67,13 +67,6 @@ definitions:
       - detail
       - status
       - complete
-  Agenda:
-    type: object
-    properties:
-      id:
-        type: string
-    required:
-      - id
   Error:
     type: object
     properties:

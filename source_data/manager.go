@@ -1,18 +1,14 @@
 package source_data
 
-import "log"
+import (
+	"log"
+
+	"github.com/ervitis/crossfitAgenda/ports"
+)
 
 type (
-	ResourceManager interface {
-		DownloadPicture() (string, error)
-	}
-
-	SourceData interface {
-		DownloadPicture() (string, error)
-	}
-
 	source struct {
-		sourceClient SourceData
+		sourceClient ports.SourceData
 	}
 
 	SourceOption func(*source)
@@ -22,7 +18,7 @@ type (
 	}
 )
 
-func defaultClient() SourceData {
+func defaultClient() ports.SourceData {
 	return &dumbClientSourceData{log: log.Default()}
 }
 
@@ -39,13 +35,13 @@ func (s source) DownloadPicture() (string, error) {
 	return s.sourceClient.DownloadPicture()
 }
 
-func WithSourceDataClient(data SourceData) SourceOption {
+func WithSourceDataClient(data ports.SourceData) SourceOption {
 	return func(s *source) {
 		s.sourceClient = data
 	}
 }
 
-func NewResourceManager(opts ...SourceOption) ResourceManager {
+func NewResourceManager(opts ...SourceOption) ports.ResourceManager {
 	sd := defaultSourceOption()
 
 	for _, opt := range opts {

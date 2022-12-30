@@ -3,6 +3,7 @@ package calendar
 import (
 	"context"
 	"fmt"
+	"github.com/ervitis/crossfitAgenda/ports"
 	"log"
 	"time"
 
@@ -26,17 +27,40 @@ type (
 
 	Calendar struct {
 		ID         string
-		DaysBooked map[int]*book
+		DaysBooked map[int]ports.IBook
 		Month      time.Month
-	}
-
-	IAgendaService interface {
-		GetCrossfitEvents() (*Calendar, error)
-		UpdateEvents(*Calendar, domain.MonthWodExercises) error
 	}
 )
 
-func New(ctx context.Context, credManager *credentials.Manager) (IAgendaService, error) {
+func (b book) GetEventID() string {
+	return b.EventID
+}
+
+func (b book) GetDay() int {
+	return b.Day
+}
+
+func (b book) GetStartDate() time.Time {
+	return b.StartDate
+}
+
+func (b book) GetEndDate() time.Time {
+	return b.EndDate
+}
+
+func (c Calendar) GetID() string {
+	return c.ID
+}
+
+func (c Calendar) GetDaysBooked() map[int]ports.IBook {
+	return c.DaysBooked
+}
+
+func (c Calendar) GetMonth() time.Month {
+	return c.Month
+}
+
+func New(ctx context.Context, credManager *credentials.Manager) (ports.IAgendaService, error) {
 	srv, err := calendar.NewService(ctx, option.WithHTTPClient(credManager.GetClient()))
 	if err != nil {
 		return nil, fmt.Errorf("error creating client: %w", err)
@@ -46,14 +70,14 @@ func New(ctx context.Context, credManager *credentials.Manager) (IAgendaService,
 	}, nil
 }
 
-func (w *agendaService) UpdateEvents(cal *Calendar, wods domain.MonthWodExercises) error {
+func (w *agendaService) UpdateEvents(cal ports.ICalendar, wods domain.MonthWodExercises) error {
 	for day, wod := range wods {
-		book, exists := cal.DaysBooked[day]
+		book, exists := cal.GetDaysBooked()[day]
 		if !exists {
 			continue
 		}
 
-		if book.StartDate.Month() != wod.Month() {
+		if book.GetStartDate().Month() != wod.Month() {
 			continue
 		}
 
@@ -61,11 +85,11 @@ func (w *agendaService) UpdateEvents(cal *Calendar, wods domain.MonthWodExercise
 			continue
 		}
 
-		if _, err := w.calendar.Events.Update(cal.ID, book.EventID, &calendar.Event{
+		if _, err := w.calendar.Events.Update(cal.GetID(), book.GetEventID(), &calendar.Event{
 			Description: wod.ExerciseName().String(),
 			Summary:     fmt.Sprintf("Crossfit class: %s", wod.ExerciseName().String()),
-			End:         &calendar.EventDateTime{DateTime: book.EndDate.Format(time.RFC3339)},
-			Start:       &calendar.EventDateTime{DateTime: book.StartDate.Format(time.RFC3339)},
+			End:         &calendar.EventDateTime{DateTime: book.GetEndDate().Format(time.RFC3339)},
+			Start:       &calendar.EventDateTime{DateTime: book.GetStartDate().Format(time.RFC3339)},
 		}).Do(); err != nil {
 			return err
 		}
@@ -78,7 +102,7 @@ func (w *agendaService) getLocation() *time.Location {
 	return loc
 }
 
-func (w *agendaService) GetCrossfitEvents() (*Calendar, error) {
+func (w *agendaService) GetCrossfitEvents() (ports.ICalendar, error) {
 	now := time.Now().In(w.getLocation())
 
 	firstOfMonth := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, w.getLocation())
@@ -107,7 +131,7 @@ func (w *agendaService) GetCrossfitEvents() (*Calendar, error) {
 		return &Calendar{}, nil
 	}
 
-	myCalendar := &Calendar{Month: firstOfMonth.Month(), DaysBooked: make(map[int]*book), ID: primaryCalendar.Id}
+	myCalendar := &Calendar{Month: firstOfMonth.Month(), DaysBooked: make(map[int]ports.IBook), ID: primaryCalendar.Id}
 	for _, item := range events.Items {
 		startDateEvent, _ := time.Parse(time.RFC3339, item.Start.DateTime)
 		endDateEvent, _ := time.Parse(time.RFC3339, item.End.DateTime)

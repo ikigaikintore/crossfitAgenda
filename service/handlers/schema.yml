@@ -1,82 +1,128 @@
-swagger: "2.0"
+openapi: "3.0.3"
 info:
   title: Crossfit Agenda
   version: 1.0.0
-host: localhost:8080
-basePath: /v1
-schemes:
-  - http
 paths:
   /start:
     post:
       summary: Start process to fill our calendar
       operationId: startCrossfitAgenda
-      produces:
-        - application/json
       responses:
         204:
           description: 'ok'
         500:
-          description: Error
-          schema:
-            $ref: '#/definitions/Error'
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
   /status:
     get:
       summary: Status process
       operationId: status
-      produces:
-        - application/json
       responses:
         200:
-          description: successful operation
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/Status'
+          description: status of the process
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProcessStatus'
 
-securityDefinitions:
-  api_key:
-    type: apiKey
-    name: api_key
-    in: header
-definitions:
-  Status:
-    type: object
-    properties:
-      id:
-        type: integer
-        format: int64
-      date:
-        type: integer
-        format: uint64
-      detail:
-        type: string
-      status:
-        type: string
-        description: Process Status
-        enum:
-          - working
-          - finished
-          - failed
-      complete:
-        type: boolean
-        default: false
-    required:
-      - id
-      - date
-      - detail
-      - status
-      - complete
-  Error:
-    type: object
-    properties:
-      status:
-        type: number
-      message:
-        type: string
-      date:
-        type: string
-    required:
-      - status
-      - message
-      - date
+  /credentials/google:
+    get:
+      summary: Get link to auth in Google
+      operationId: credentialsGoogle
+      responses:
+        200:
+          description: get link for set credentials in Google
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GoogleCredentials'
+
+    post:
+      summary: Set token
+      operationId: setTokenGoogle
+      requestBody:
+        required: true
+        description: google token
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GoogleToken'
+      responses:
+        204:
+          description: successful operation
+        400:
+          description: invalid token
+        401:
+          description: not authorized
+        403:
+          description: forbidden
+        500:
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+
+components:
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      in: header
+      name: X-api-key
+
+  schemas:
+    GoogleCredentials:
+      type: object
+      properties:
+        link:
+          type: string
+      required:
+        - link
+    GoogleToken:
+      type: object
+      properties:
+        token:
+          type: string
+      required:
+        - token
+    ProcessStatus:
+      type: object
+      properties:
+        date:
+          type: integer
+          format: uint64
+        detail:
+          type: string
+        id:
+          type: string
+          description: Process Status
+          enum:
+            - working
+            - finished
+            - failed
+        complete:
+          type: boolean
+          default: false
+      required:
+        - id
+        - date
+        - detail
+        - status
+        - complete
+    Error:
+      type: object
+      properties:
+        status:
+          type: number
+        message:
+          type: string
+        date:
+          type: string
+      required:
+        - status
+        - message
+        - date

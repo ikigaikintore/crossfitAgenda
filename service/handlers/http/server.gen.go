@@ -16,8 +16,54 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+// Defines values for ProcessStatusId.
+const (
+	Failed   ProcessStatusId = "failed"
+	Finished ProcessStatusId = "finished"
+	Working  ProcessStatusId = "working"
+)
+
+// Error defines model for Error.
+type Error struct {
+	Date    string  `json:"date"`
+	Message string  `json:"message"`
+	Status  float32 `json:"status"`
+}
+
+// GoogleCredentials defines model for GoogleCredentials.
+type GoogleCredentials struct {
+	Link string `json:"link"`
+}
+
+// GoogleToken defines model for GoogleToken.
+type GoogleToken struct {
+	Token string `json:"token"`
+}
+
+// ProcessStatus defines model for ProcessStatus.
+type ProcessStatus struct {
+	Complete bool   `json:"complete"`
+	Date     uint64 `json:"date"`
+	Detail   string `json:"detail"`
+
+	// Id Process Status
+	Id ProcessStatusId `json:"id"`
+}
+
+// ProcessStatusId Process Status
+type ProcessStatusId string
+
+// SetTokenGoogleJSONRequestBody defines body for SetTokenGoogle for application/json ContentType.
+type SetTokenGoogleJSONRequestBody = GoogleToken
+
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
+	// Get link to auth in Google
+	// (GET /credentials/google)
+	CredentialsGoogle(ctx echo.Context) error
+	// Set token
+	// (POST /credentials/google)
+	SetTokenGoogle(ctx echo.Context) error
 	// Start process to fill our calendar
 	// (POST /start)
 	StartCrossfitAgenda(ctx echo.Context) error
@@ -29,6 +75,24 @@ type ServerInterface interface {
 // ServerInterfaceWrapper converts echo contexts to parameters.
 type ServerInterfaceWrapper struct {
 	Handler ServerInterface
+}
+
+// CredentialsGoogle converts echo context to params.
+func (w *ServerInterfaceWrapper) CredentialsGoogle(ctx echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.CredentialsGoogle(ctx)
+	return err
+}
+
+// SetTokenGoogle converts echo context to params.
+func (w *ServerInterfaceWrapper) SetTokenGoogle(ctx echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.SetTokenGoogle(ctx)
+	return err
 }
 
 // StartCrossfitAgenda converts echo context to params.
@@ -77,6 +141,8 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 		Handler: si,
 	}
 
+	router.GET(baseURL+"/credentials/google", wrapper.CredentialsGoogle)
+	router.POST(baseURL+"/credentials/google", wrapper.SetTokenGoogle)
 	router.POST(baseURL+"/start", wrapper.StartCrossfitAgenda)
 	router.GET(baseURL+"/status", wrapper.Status)
 
@@ -85,16 +151,18 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"H4sIAAAAAAAC/5RUzWrkSAx+FaPdY5F2QnYJvi07cxjmEsgxDIPaltuVlKtqJDmhCX73QbbbndDOYS5N",
-	"Yak+fT+qfoM9Ct2jdlDB7uUaHNSpzylSVIHqbXTQUOujV5+ifYD/DhQbtFPmlInV0/TdN/arx0xQgSj7",
-	"eIBxdMD0a/BMDVSP1vPDnXrS/olqhdHBV+bEl4gNKm1gOuhJBA/bNVHUQd6V4tDviS+oLH1nMDfP2+L3",
-	"sGJ+JGhOBZpJNtTiEBSqFoPQCrJPKRBGQznJaRP3qFDB4KP+ewtrr49KB6Nqniv6sClw9nkF+Rzj7ERD",
-	"UrPPFiFUcM+pJpHi4eQAxaE3S14TP9sQBxa4dNTYEX2g97F9Hu0icWXvziavTl3aOzrokpiUkGoMdq7u",
-	"yrsSHPjYpskDr8Gu/M9JpPVaLDvo4IVYZlXXV+VVabJTpojZQwXgIKN2kwU7UWSdIpyGvVkfo1nyrYHK",
-	"ImY94a/wmVMz1Bb2I2DOwdfTjd2TpGhSmCSnKPM23JS3l2anZ+P0T1leluatdyB1R/30oP5maqGCv3bv",
-	"ntxubhvNJxn6Hvl4olvkJUlNRetDKNLARY3ByM8LvzvvwIG2Vc/5/KHQDTUy1MalHUKxzvggziv18qnK",
-	"hcm4rgcy43FDtg5y0r1UbcLMvFPNxlaoHtjr8cvHfy7M/uczHScyRrkjbMgSiNhPI5f6mUP23+k4OSmv",
-	"eLB3VcGNrdnvAAAA//9geO1lNwUAAA==",
+	"H4sIAAAAAAAC/8xVwW7jNhD9FWLao2I7TdqDbm1QBEUvBdxDgWIPtDiSGVOkMhxl4Q3074shLdleKbuX",
+	"LLAnE+LjzLw388avUIW2Cx49RyhfIVZ7bHU6/kkUSA4dhQ6JLabPRjPKLx87hBIik/UNDAW0GKNulu8i",
+	"a+7jxZXv2x0SDEMBhM+9JTRQ/j/izsGKnO9DMT4MuyesWGI+htA4fCA06NlqF+e1OusPC/V8kTSh3s7w",
+	"bzign8fm8fPXg2fYUvR/KFQY43aS5jq+9MVh1tpgrXvHUNbaRZxi7UJwqL0EG7tSB2o1Qwm99fzbPUxY",
+	"6xkbUbwAg6ytW+yTNTldrMh2bIOHcqxTbcfeoO9bofYx0EHeFVBbb+MejRy1dWguCL+hizVjb6eCinP7",
+	"J/Jz4WSasOrJ8nErw5rV0p39G49yslLzHrVBggK8buXxfze6szcHPJ4FOb0YJKD1dUh6WHZy90Ahxtqy",
+	"+r1BbzQU8IIUsxy3q81qI1qFDr3uLJRwt9qs7qCATvM+VbOuzlO5btIUyecGWX6ky1rE/cukXBM0zxuI",
+	"ULELPmZqv2w2eR48o+dMtnO2SiHWTzH4s3Hl9DNhDSX8tD47e32y9XrumcT/uuENshJPqDqQisjqgo2y",
+	"Xp3KTJ3o21bTEUp4HB9xULrn/SWwgC7EBepb5GSuC97PPUb+I5jjO1POJl4im65VtunliDL1OMxacT/3",
+	"R+wr8UfdOzXRE873uW/XYOtftLPmlC+hbucoHziJGMh+QpNhd3NYHWhnjcmBfn3HMcmrf0Et2SLktVMR",
+	"6QVJ4Ql4OQlb5JHeUMA6sqZUzhszINej3ya7fVv1cPixSAsN1Z1WJQdVW+dU6ElV2gkpmtQ4bfvFZTDt",
+	"2O+2Aa7/dRbY5gpVqBXvcWQ0ZyuY8+UwfA4AAP//zsKAq0kIAAA=",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

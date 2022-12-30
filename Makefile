@@ -33,7 +33,7 @@ generate-proto-v1: ## Generate proto file WARNING this is beta and you have to m
 	--package-name crossfitagenda \
 	-i /local/service/handlers/schema.yml && \
 	touch ./service/handlers/grpc/crossfitagenda.proto && \
-	cat ./service/handlers/grpc/models/{agenda,error,status}.proto >> ./service/handlers/grpc/crossfitagenda.proto && \
+	cat ./service/handlers/grpc/models/{google_credentials,error,google_token,process_status}.proto >> ./service/handlers/grpc/crossfitagenda.proto && \
 	cat ./service/handlers/grpc/services/default_service.proto >> ./service/handlers/grpc/crossfitagenda.proto && \
 	rm -rf ./service/handlers/grpc/models ./service/handlers/grpc/services ./service/handlers/grpc/README.md ./service/handlers/grpc/.openapi-generator-ignore ./service/handlers/grpc/.openapi-generator
 

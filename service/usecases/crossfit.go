@@ -10,16 +10,28 @@ import (
 	"sync"
 )
 
-type Crossfit interface {
+type AgendaCrossfit interface {
 	Book(ctx context.Context) error
 	Status() domain.Status
+	GetCredentialsUrl() string
+	SaveToken(ctx context.Context, token string) error
 }
 
 type crossfit struct {
 	rm  ports.ResourceManager
 	mgr ports.IManager
 
+	cred *credentials.Manager
+
 	cache domain.Cache
+}
+
+func (c *crossfit) GetCredentialsUrl() string {
+	return c.cred.GetUrlLogin()
+}
+
+func (c *crossfit) SaveToken(ctx context.Context, token string) error {
+	return c.cred.SaveToken(ctx, token)
 }
 
 func (c *crossfit) Book(ctx context.Context) error {
@@ -34,7 +46,7 @@ func (c *crossfit) Book(ctx context.Context) error {
 	}
 	ocrClient := ocr.NewSourceReader(namePic)
 
-	processor, err := ocrClient.Read()
+	processor, err := ocrClient.Read(ctx)
 	if err != nil {
 		status = domain.Failed
 		c.updateStatus(status)
@@ -42,9 +54,8 @@ func (c *crossfit) Book(ctx context.Context) error {
 	}
 
 	monthWod := processor.Convert()
-	credManager := credentials.New()
-	_ = credManager.SetConfigWithScopes(calendar.Scope, calendar.EventsScope)
-	svc, _ := calendar.New(ctx, credManager)
+
+	svc, _ := calendar.New(ctx, c.cred)
 	events, err := svc.GetCrossfitEvents()
 	if err != nil {
 		status = domain.Failed
@@ -77,12 +88,16 @@ func (c *crossfit) Status() domain.Status {
 	return st
 }
 
-func New(rm ports.ResourceManager, mgr ports.IManager) Crossfit {
+func New(rm ports.ResourceManager, mgr ports.IManager) AgendaCrossfit {
 	f := domain.Finished
+
+	cred := credentials.New()
+	_ = cred.SetConfigWithScopes(calendar.Scope, calendar.EventsScope)
 
 	return &crossfit{
 		rm,
 		mgr,
+		cred,
 		domain.Cache{
 			Status: &f,
 			Mtx:    sync.Mutex{},

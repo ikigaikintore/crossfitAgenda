@@ -61,7 +61,7 @@ func (c Calendar) GetMonth() time.Month {
 }
 
 func New(ctx context.Context, credManager *credentials.Manager) (ports.IAgendaService, error) {
-	srv, err := calendar.NewService(ctx, option.WithHTTPClient(credManager.GetClient()))
+	srv, err := calendar.NewService(ctx, option.WithHTTPClient(credManager.GetClient(ctx)))
 	if err != nil {
 		return nil, fmt.Errorf("error creating client: %w", err)
 	}

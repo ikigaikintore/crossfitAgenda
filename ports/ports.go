@@ -1,6 +1,7 @@
 package ports
 
 import (
+	"context"
 	"github.com/ervitis/crossfitAgenda/domain"
 	"net/http"
 	"time"
@@ -12,7 +13,7 @@ type (
 	}
 
 	SourceReader interface {
-		Read() (domain.RawProcessor, error)
+		Read(ctx context.Context) (domain.RawProcessor, error)
 		SetFile(path string)
 	}
 
@@ -27,7 +28,7 @@ type (
 
 	IManager interface {
 		SetConfigWithScopes(scopes ...string) error
-		GetClient() *http.Client
+		GetClient(ctx context.Context) *http.Client
 	}
 
 	IBook interface {

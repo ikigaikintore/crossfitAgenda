@@ -57,6 +57,24 @@ func createFolderEnv() {
 	}
 }
 
+func (m *Manager) GetUrlLogin() string {
+	tok, _ := tokenFromFile(pathTokenFile)
+	if err := m.valid(tok.Expiry); err != nil && errors.Is(err, ErrExpiredToken) {
+		return m.oauthCfg.AuthCodeURL("state-token", oauth2.AccessTypeOffline)
+	}
+	return ""
+}
+
+func (m *Manager) SaveToken(ctx context.Context, authCode string) error {
+	tok, err := m.oauthCfg.Exchange(ctx, authCode)
+	if err != nil {
+		log.Printf("Unable to retrieve token from web: %v", err)
+		return err
+	}
+	saveToken(pathTokenFile, tok)
+	return nil
+}
+
 func (m *Manager) valid(exp time.Time) error {
 	now := time.Now()
 	if exp.Before(now) {
@@ -74,27 +92,27 @@ func (m *Manager) SetConfigWithScopes(scopes ...string) error {
 	return nil
 }
 
-func (m *Manager) GetClient() *http.Client {
+func (m *Manager) GetClient(ctx context.Context) *http.Client {
 	if m.oauthCfg == nil {
 		panic("Cannot get client, first use SetConfigWithScopes function")
 	}
 
 	tok, err := tokenFromFile(pathTokenFile)
 	if err != nil {
-		tok = m.getTokenFromWeb(m.oauthCfg)
+		tok = m.getTokenFromWeb(ctx)
 		saveToken(pathTokenFile, tok)
 	}
 
 	if err := m.valid(tok.Expiry); err != nil && errors.Is(err, ErrExpiredToken) {
-		tok = m.getTokenFromWeb(m.oauthCfg)
+		tok = m.getTokenFromWeb(ctx)
 		saveToken(pathTokenFile, tok)
 	}
 
 	return m.oauthCfg.Client(context.Background(), tok)
 }
 
-func (m *Manager) getTokenFromWeb(config *oauth2.Config) *oauth2.Token {
-	authURL := config.AuthCodeURL("state-token", oauth2.AccessTypeOffline)
+func (m *Manager) getTokenFromWeb(ctx context.Context) *oauth2.Token {
+	authURL := m.oauthCfg.AuthCodeURL("state-token", oauth2.AccessTypeOffline)
 	fmt.Printf("Go to the following link in your browser then type the "+
 		"authorization code: \n%v\n", authURL)
 
@@ -103,10 +121,7 @@ func (m *Manager) getTokenFromWeb(config *oauth2.Config) *oauth2.Token {
 		log.Fatalf("Unable to read authorization code: %v", err)
 	}
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	tok, err := config.Exchange(ctx, authCode)
+	tok, err := m.oauthCfg.Exchange(ctx, authCode)
 	if err != nil {
 		log.Fatalf("Unable to retrieve token from web: %v", err)
 	}

@@ -14,7 +14,7 @@ type (
 	}
 )
 
-func (fr fileReader) Read() (domain.RawProcessor, error) {
+func (fr fileReader) Read(ctx context.Context) (domain.RawProcessor, error) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 

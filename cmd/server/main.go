@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"github.com/ervitis/crossfitAgenda/service/handlers/grpc"
 	"log"
 	"os"
 	"os/signal"
@@ -22,13 +23,19 @@ func main() {
 	resourceManager := source_data.NewResourceManager(
 		source_data.WithSourceDataClient(source_data.NewTwitterClient()),
 	)
-	srv := http.NewServer(http.NewHandler(usecases.New(resourceManager, credentials.New())))
+	credManager := credentials.New()
+	httpSrv := http.NewServer(http.NewHandler(usecases.New(resourceManager, credManager)))
+	grpcSrv := grpc.NewServer(grpc.New(resourceManager, credManager))
 
 	wg := sync.WaitGroup{}
 	wg.Add(1)
 
 	go func() {
-		log.Panic(srv.Start(":8080"))
+		log.Panic(httpSrv.Start(":8080"))
+	}()
+
+	go func() {
+		grpcSrv.Serve()
 	}()
 
 	go func() {
@@ -37,7 +44,8 @@ func main() {
 		defer cancel()
 		defer wg.Done()
 
-		log.Panic(srv.Shutdown(ctx))
+		grpcSrv.Shutdown()
+		log.Panic(httpSrv.Shutdown(ctx))
 	}()
 
 	wg.Wait()

@@ -92,6 +92,14 @@ func (m *Manager) SetConfigWithScopes(scopes ...string) error {
 	return nil
 }
 
+func (m *Manager) IsTokenExpired() bool {
+	tok, _ := tokenFromFile(pathTokenFile)
+	if err := m.valid(tok.Expiry); err != nil && errors.Is(err, ErrExpiredToken) {
+		return true
+	}
+	return false
+}
+
 func (m *Manager) GetClient(ctx context.Context) *http.Client {
 	if m.oauthCfg == nil {
 		panic("Cannot get client, first use SetConfigWithScopes function")

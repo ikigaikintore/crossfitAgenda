@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.2.0
 // - protoc             v3.21.6
-// source: handlers/grpc/crossfitagenda.proto
+// source: service/handlers/grpc/crossfitagenda.proto
 
 package grpc
 
@@ -23,8 +23,10 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type DefaultServiceClient interface {
+	CredentialsGoogle(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*CredentialsGoogle200Response, error)
+	SetTokenGoogle(ctx context.Context, in *SetTokenGoogleRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	StartCrossfitAgenda(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	Status(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*StatusResponse, error)
+	Status(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*Status200Response, error)
 }
 
 type defaultServiceClient struct {
@@ -33,6 +35,24 @@ type defaultServiceClient struct {
 
 func NewDefaultServiceClient(cc grpc.ClientConnInterface) DefaultServiceClient {
 	return &defaultServiceClient{cc}
+}
+
+func (c *defaultServiceClient) CredentialsGoogle(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*CredentialsGoogle200Response, error) {
+	out := new(CredentialsGoogle200Response)
+	err := c.cc.Invoke(ctx, "/crossfitagenda.DefaultService/CredentialsGoogle", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *defaultServiceClient) SetTokenGoogle(ctx context.Context, in *SetTokenGoogleRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, "/crossfitagenda.DefaultService/SetTokenGoogle", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *defaultServiceClient) StartCrossfitAgenda(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*emptypb.Empty, error) {
@@ -44,8 +64,8 @@ func (c *defaultServiceClient) StartCrossfitAgenda(ctx context.Context, in *empt
 	return out, nil
 }
 
-func (c *defaultServiceClient) Status(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*StatusResponse, error) {
-	out := new(StatusResponse)
+func (c *defaultServiceClient) Status(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*Status200Response, error) {
+	out := new(Status200Response)
 	err := c.cc.Invoke(ctx, "/crossfitagenda.DefaultService/Status", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -57,18 +77,26 @@ func (c *defaultServiceClient) Status(ctx context.Context, in *emptypb.Empty, op
 // All implementations should embed UnimplementedDefaultServiceServer
 // for forward compatibility
 type DefaultServiceServer interface {
+	CredentialsGoogle(context.Context, *emptypb.Empty) (*CredentialsGoogle200Response, error)
+	SetTokenGoogle(context.Context, *SetTokenGoogleRequest) (*emptypb.Empty, error)
 	StartCrossfitAgenda(context.Context, *emptypb.Empty) (*emptypb.Empty, error)
-	Status(context.Context, *emptypb.Empty) (*StatusResponse, error)
+	Status(context.Context, *emptypb.Empty) (*Status200Response, error)
 }
 
 // UnimplementedDefaultServiceServer should be embedded to have forward compatible implementations.
 type UnimplementedDefaultServiceServer struct {
 }
 
+func (UnimplementedDefaultServiceServer) CredentialsGoogle(context.Context, *emptypb.Empty) (*CredentialsGoogle200Response, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CredentialsGoogle not implemented")
+}
+func (UnimplementedDefaultServiceServer) SetTokenGoogle(context.Context, *SetTokenGoogleRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SetTokenGoogle not implemented")
+}
 func (UnimplementedDefaultServiceServer) StartCrossfitAgenda(context.Context, *emptypb.Empty) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StartCrossfitAgenda not implemented")
 }
-func (UnimplementedDefaultServiceServer) Status(context.Context, *emptypb.Empty) (*StatusResponse, error) {
+func (UnimplementedDefaultServiceServer) Status(context.Context, *emptypb.Empty) (*Status200Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Status not implemented")
 }
 
@@ -81,6 +109,42 @@ type UnsafeDefaultServiceServer interface {
 
 func RegisterDefaultServiceServer(s grpc.ServiceRegistrar, srv DefaultServiceServer) {
 	s.RegisterService(&DefaultService_ServiceDesc, srv)
+}
+
+func _DefaultService_CredentialsGoogle_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(emptypb.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DefaultServiceServer).CredentialsGoogle(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/crossfitagenda.DefaultService/CredentialsGoogle",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DefaultServiceServer).CredentialsGoogle(ctx, req.(*emptypb.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DefaultService_SetTokenGoogle_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SetTokenGoogleRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DefaultServiceServer).SetTokenGoogle(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/crossfitagenda.DefaultService/SetTokenGoogle",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DefaultServiceServer).SetTokenGoogle(ctx, req.(*SetTokenGoogleRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _DefaultService_StartCrossfitAgenda_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -127,6 +191,14 @@ var DefaultService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*DefaultServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
+			MethodName: "CredentialsGoogle",
+			Handler:    _DefaultService_CredentialsGoogle_Handler,
+		},
+		{
+			MethodName: "SetTokenGoogle",
+			Handler:    _DefaultService_SetTokenGoogle_Handler,
+		},
+		{
 			MethodName: "StartCrossfitAgenda",
 			Handler:    _DefaultService_StartCrossfitAgenda_Handler,
 		},
@@ -136,5 +208,5 @@ var DefaultService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "handlers/grpc/crossfitagenda.proto",
+	Metadata: "service/handlers/grpc/crossfitagenda.proto",
 }

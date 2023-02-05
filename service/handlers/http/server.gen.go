@@ -16,28 +16,26 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-// Defines values for ProcessStatusId.
+// Defines values for ProcessStatuses.
 const (
-	Failed   ProcessStatusId = "failed"
-	Finished ProcessStatusId = "finished"
-	Working  ProcessStatusId = "working"
+	Failed   ProcessStatuses = "failed"
+	Finished ProcessStatuses = "finished"
+	Working  ProcessStatuses = "working"
 )
+
+// ProcessStatuses Process Status
+type ProcessStatuses string
 
 // Error defines model for Error.
 type Error struct {
-	Date    string  `json:"date"`
-	Message string  `json:"message"`
-	Status  float32 `json:"status"`
+	Date    string `json:"date"`
+	Message string `json:"message"`
+	Status  uint32 `json:"status"`
 }
 
 // GoogleCredentials defines model for GoogleCredentials.
 type GoogleCredentials struct {
 	Link string `json:"link"`
-}
-
-// GoogleToken defines model for GoogleToken.
-type GoogleToken struct {
-	Token string `json:"token"`
 }
 
 // ProcessStatus defines model for ProcessStatus.
@@ -47,14 +45,21 @@ type ProcessStatus struct {
 	Detail   string `json:"detail"`
 
 	// Id Process Status
-	Id ProcessStatusId `json:"id"`
+	Id ProcessStatuses `json:"id"`
 }
 
-// ProcessStatusId Process Status
-type ProcessStatusId string
+// GoogleToken defines model for GoogleToken.
+type GoogleToken struct {
+	Token string `json:"token"`
+}
+
+// SetTokenGoogleJSONBody defines parameters for SetTokenGoogle.
+type SetTokenGoogleJSONBody struct {
+	Token string `json:"token"`
+}
 
 // SetTokenGoogleJSONRequestBody defines body for SetTokenGoogle for application/json ContentType.
-type SetTokenGoogleJSONRequestBody = GoogleToken
+type SetTokenGoogleJSONRequestBody SetTokenGoogleJSONBody
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
@@ -151,18 +156,18 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"H4sIAAAAAAAC/8xVwW7jNhD9FWLao2I7TdqDbm1QBEUvBdxDgWIPtDiSGVOkMhxl4Q3074shLdleKbuX",
-	"LLAnE+LjzLw388avUIW2Cx49RyhfIVZ7bHU6/kkUSA4dhQ6JLabPRjPKLx87hBIik/UNDAW0GKNulu8i",
-	"a+7jxZXv2x0SDEMBhM+9JTRQ/j/izsGKnO9DMT4MuyesWGI+htA4fCA06NlqF+e1OusPC/V8kTSh3s7w",
-	"bzign8fm8fPXg2fYUvR/KFQY43aS5jq+9MVh1tpgrXvHUNbaRZxi7UJwqL0EG7tSB2o1Qwm99fzbPUxY",
-	"6xkbUbwAg6ytW+yTNTldrMh2bIOHcqxTbcfeoO9bofYx0EHeFVBbb+MejRy1dWguCL+hizVjb6eCinP7",
-	"J/Jz4WSasOrJ8nErw5rV0p39G49yslLzHrVBggK8buXxfze6szcHPJ4FOb0YJKD1dUh6WHZy90Ahxtqy",
-	"+r1BbzQU8IIUsxy3q81qI1qFDr3uLJRwt9qs7qCATvM+VbOuzlO5btIUyecGWX6ky1rE/cukXBM0zxuI",
-	"ULELPmZqv2w2eR48o+dMtnO2SiHWTzH4s3Hl9DNhDSX8tD47e32y9XrumcT/uuENshJPqDqQisjqgo2y",
-	"Xp3KTJ3o21bTEUp4HB9xULrn/SWwgC7EBepb5GSuC97PPUb+I5jjO1POJl4im65VtunliDL1OMxacT/3",
-	"R+wr8UfdOzXRE873uW/XYOtftLPmlC+hbucoHziJGMh+QpNhd3NYHWhnjcmBfn3HMcmrf0Et2SLktVMR",
-	"6QVJ4Ql4OQlb5JHeUMA6sqZUzhszINej3ya7fVv1cPixSAsN1Z1WJQdVW+dU6ElV2gkpmtQ4bfvFZTDt",
-	"2O+2Aa7/dRbY5gpVqBXvcWQ0ZyuY8+UwfA4AAP//zsKAq0kIAAA=",
+	"H4sIAAAAAAAC/6SVTW/bPAzHv4rA5zm6cdZ2O/i2FcMw7DIgOwwYdlBt2lEjS5pEbQgKf/eB8kucOkXT",
+	"5eZIpPgj+SfzCKVtnTVoKEDxCB5/RQz0wVYK08EnaxuN3+wODf8srSE0xJ/SOa1KScqa/CHYdB3KLbaS",
+	"v5y3Dj0Nr9DoT3uHUEAgr0wDXZeliMpjBcWPwexnNprZ+wcsCTq2qzCUXjkOBwUkIEFWyEhbNMQgCPPX",
+	"yEfs3w/OmtBzfPTe+gvyqDjKMo0MWgxBNqfvAkmKyb22vpUEBURl6OYapkSVIWzQLwoyuB7ez3qEc0qU",
+	"chWjY5cNrbzzWHHBpA4XFEIrs3u5n8nqHNYeTZQHtjn4V29LDGEz1fEfoVnqGvsOVljLqAmKWuqAE+K9",
+	"tRql4ahjr4+a9u72RNM4G5JKn+y+qvj4f481FPBffhi3vMcM+VF6GBZVVNXY9ilQdlDGlNQ5dR5CicGb",
+	"DQYKhnwKksp0yn0zBkcTW0b8Y/2O882gVkaFLTJyLZXGasY1U0nAMnpF+w1H70NJp77gnr8Ux9qirNBD",
+	"Bka27Pz9Sjp1tcP9oQGDR8pTmdqm+ivSfHfnbQi1IvG+QVNJyOA3+tCn8Wa1Xq25N9ahkU5BATer9eoG",
+	"MnCStokmn2kxb5I8+bjBpDpWVdLc5yrFmkx7IcOTtXO9Xj8ngskuX45nKlRsW+n3PCNIggdq3HpCGTGE",
+	"6zJwNpwg2yClTTnDGvf7/nmi2V9APt//3SKt26VGQixZI3XUYmJhz9tzatDv5y6Dt6+wPqrSBkn0fyN8",
+	"ngeSPtXlmfrw9SiVSSkvJ2l3l0FyWOGGaSIraqW1sNGLUmqG8BP9sPFO6m4aw9eL7XilLugohhGPx6v7",
+	"GwAA///a+X8eJwgAAA==",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

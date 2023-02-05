@@ -6,7 +6,7 @@ const (
 	FailedName   string = "failed"
 )
 
-func (se ProcessStatusId) ToString() string {
+func (se ProcessStatuses) ToString() string {
 	switch se {
 	case Working:
 		return WorkingName

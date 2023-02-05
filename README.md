@@ -10,6 +10,7 @@ Connect crossfit using a picture of their schedule and set it in your Google Cal
 - Register the days with the time and the exercise in your Google Calendar (or any Calendar service)
 - Retry retrieve credentials if token has expired
 - Handle the authorize error in Calendar and retry credentials
+- Create external API HTTP or GRPC
 
 ## TODO
 
@@ -18,7 +19,6 @@ Connect crossfit using a picture of their schedule and set it in your Google Cal
 - Cache the ocr result
 - If an event is unbooked, delete it from the calendar
 - ~~Use events~~
-- Create external API HTTP or GRPC
 
 ## Run it
 

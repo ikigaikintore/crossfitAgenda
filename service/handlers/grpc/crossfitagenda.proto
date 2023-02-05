@@ -13,63 +13,55 @@ syntax = "proto3";
 package crossfitagenda;
 option go_package = "./;grpc";
 
-message GoogleCredentials {
+
+message CredentialsGoogle200Response {
 
   string link = 3321850;
 
 }
 
-message Error {
 
-  float status = 355610639;
+enum ProcessStatuses {
+  ProcessStatuses_WORKING = 0;
+  ProcessStatuses_FINISHED = 1;
+  ProcessStatuses_FAILED = 2;
+}
+
+message SetTokenGoogleRequest {
+
+  string token = 110541305;
+
+}
+
+message StartCrossfitAgenda500Response {
+
+  int32 status = 355610639;
 
   string message = 418054152;
 
   string date = 3076014;
 
 }
-
-message GoogleToken {
-
-  string token = 110541305;
-
-}
-
-message ProcessStatus {
+message Status200Response {
 
   int32 date = 3076014;
 
   string detail = 261482417;
 
-  // Process Status
-  enum IdEnum {
-    IdEnum_WORKING = 0;
-    IdEnum_FINISHED = 1;
-    IdEnum_FAILED = 2;
-  }
-
-  IdEnum id = 3355;
+  ProcessStatuses id = 3355;
 
   bool complete = 62574280;
 
 }
-
 import "google/protobuf/empty.proto";
 
 service DefaultService {
-  rpc CredentialsGoogle (google.protobuf.Empty) returns (GoogleCredentials);
+  rpc CredentialsGoogle (google.protobuf.Empty) returns (CredentialsGoogle200Response);
 
   rpc SetTokenGoogle (SetTokenGoogleRequest) returns (google.protobuf.Empty);
 
   rpc StartCrossfitAgenda (google.protobuf.Empty) returns (google.protobuf.Empty);
 
-  rpc Status (google.protobuf.Empty) returns (ProcessStatus);
+  rpc Status (google.protobuf.Empty) returns (Status200Response);
 
 }
-
-message SetTokenGoogleRequest {
-  // google token
-  GoogleToken googleToken = 1;
-
-}
-
